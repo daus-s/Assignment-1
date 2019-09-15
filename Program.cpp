@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <cstdio>
 #include <stdlib.h>
-
+#include <ctype.h>
+#include <time.h>
 
 using namespace std;
 
@@ -39,13 +40,14 @@ class DNA
         int strands = 0; //this is the count of lines
         string sequences = "";
 
-        int length(double a, double b);
-        string generate();
+        double length(double x, double y);
+        string generate(double x, double y);
         void parse(string data);
         double mean(string data);
         double stddev(string data);
         int sum();
         double variance(string data);
+        double gaussian(double x, double y);
 
         DNA();
         DNA(string data);
@@ -54,7 +56,7 @@ class DNA
 
 int main(int argc, char** argv)
 {
-    cout << "dna" << endl;
+    cout << "dna analyzer - dausMcChar" << endl;
     //checks to see if there is an arguement passed into main from terminal
     if (argc > 1)
     {
@@ -64,8 +66,13 @@ int main(int argc, char** argv)
         {
             //pathname is name of file inputted
             char* pathname = argv[1];
+            cout << "opening "<< pathname << "..." << endl;
             ifstream analyze;
             analyze.open(pathname, ifstream::in);
+            // if (analyze.is_open())
+            // {
+            //     cout << "open" << endl;
+            // }
             string line;
 
             //writes line from file to new varaible representing a line
@@ -80,16 +87,16 @@ int main(int argc, char** argv)
 
             //this loop reads file and inputs into my file variable
             //checks to see if the new line is end of file, if it is we stop analysis
-            while (!analyze.eof())
+            while (analyze.good())
             {
-                if (line.back() == '\r')
+                if (line.back() == '\n')
                     line = line.substr(0, line.size()-2); //ejfibsaojdnflksadnflkdsmnalkfnsdkljnfkmsngkm sdkmgnksdjngkmdsn gkn sdkg sdkn gvkn there is probably an error here
 
                 file += line + " ";
                 getline(analyze, line);
 
 
-                cout << "line: " << line << endl;
+                //cout << "line: " << line << endl;
             }
             cout << "finished reading, added to string file" << endl;
             analyze.close();
@@ -129,8 +136,15 @@ int main(int argc, char** argv)
             clout << "standard deviation: " << dna.stddev(file) << endl;
             clout << "variance: " << dna.variance(file) << endl;
             clout << "mean: " << dna.mean(file) << endl;
-            clout << "sum: " << dna.sum() << endl;
+            clout << "sum: " << dna.sum() << endl << endl;
 
+
+            for (int i = 0; i < 1000; i++)
+            {
+                double x = (double)rand() / RAND_MAX;
+                double y = (double)rand() / RAND_MAX;
+                clout << dna.generate(x, y) << endl;
+            }
             //checks next char to see if user wants to keep going
             cout << "Continue? (y/n)" << endl;
             cin >> cont;
@@ -146,36 +160,111 @@ int main(int argc, char** argv)
 }
 
 //returns stanardly distributed length
-int DNA::length(double x, double y)
+double DNA::gaussian(double x, double y)
 {
-    int z = sqrt(-2*log(x)) * cos(2*M_PI*y);
+    double z = sqrt(-2*log(x)) * cos(2*M_PI*y);
     return abs(z);
 }
 
-string DNA::generate()
+double DNA::length(double x, double y)
 {
+    //cout << "gaussian: " << gaussian(x,y) << "mean: " << mean(sequences) << endl;
+    return (stddev(sequences) * gaussian(x,y)) + mean(sequences);
+}
+
+string DNA::generate(double x, double y)
+{
+    int size = (int)length(x,y);
+    //cout << size << endl;
+    string deoxy = "";
+    int numA = size * ((double)a/nucleotides);
+    int numC = size * ((double)c/nucleotides);
+    int numG = size * ((double)g/nucleotides);
+    int numT = size * ((double)t/nucleotides);
+    //size = numA + numC + numG + numT;
+
+    for (int i = 0; i < size; i++)
+    {
+        int n = rand() % 4;
+        if (n == 0)
+        {
+            if (numA != 0)
+            {
+              deoxy += 'a';
+              numA--;
+            }
+            else
+            {
+                n++;
+            }
+        }
+        if (n == 1)
+        {
+            if (numC != 0)
+            {
+              deoxy += 'c';
+              numC--;
+            }
+            else
+            {
+                n++;
+            }
+        }
+        if (n == 2)
+        {
+            if (numG != 0)
+            {
+              deoxy += 'g';
+              numG--;
+            }
+            else
+            {
+                n++;
+            }
+        }
+        if (n == 3)
+        {
+            if (numT != 0)
+            {
+              deoxy += 't';
+              numT--;
+            }
+            else
+            {
+                n = 0;
+            }
+        }
+    }
+
+    return deoxy;
 
 }
 
 //this is called A$AP when 'file' is initialized
 void DNA::parse(string data)
 {
-      char index = ' ';
+
+      string index = " ";
       for (int i = 0; i < data.size(); ++i)
       {
           index = data[i];
-          if (index == 'a')
+          if (index == "a")
               a++;
-          if (index == 'c')
+          if (index == "c")
               c++;
-          if (index == 'g')
+          if (index == "g")
               g++;
-          if (index == 't')
+          if (index == "t")
               t++;
-          if (index == ' ')
+          if (index == " ")
               strands++;
 
-          string bigram = "" + index + data[i+1];
+          if (index == " "|| data[i+1] == ' ')
+          {
+             continue;
+          }
+          //cout << "bigram " << i << ":" << index << data[i+1] << endl; //this one works the other one (below) doesnt
+          string bigram = index + data[i+1];
           if (i < data.size()-1 && bigram.compare("aa")  == 0)
               aa++;
           if (i < data.size()-1 && bigram.compare("ac")  == 0)
@@ -252,6 +341,10 @@ double DNA::variance(string data)
 //constructs DNA object
 DNA::DNA(string data)
 {
+    for (int i = 0; i < data.size(); ++i)
+    {
+        tolower(data[i]);
+    }
     parse(data);
     sequences = data;
 }
