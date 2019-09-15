@@ -4,6 +4,8 @@
 #include <string>
 #include <string.h>
 #include <stdio.h>
+#include <cstdio>
+#include <stdlib.h>
 
 
 using namespace std;
@@ -43,6 +45,7 @@ class DNA
         double mean(string data);
         double stddev(string data);
         int sum();
+        double variance(string data);
 
         DNA();
         DNA(string data);
@@ -57,7 +60,7 @@ int main(int argc, char** argv)
     {
         //variable to check consent of user *******************
         char cont = 'y';
-        while (cont != 'n' || cont != 'N')
+        while (true)
         {
             //pathname is name of file inputted
             char* pathname = argv[1];
@@ -81,9 +84,14 @@ int main(int argc, char** argv)
             {
                 if (line.back() == '\r')
                     line = line.substr(0, line.size()-2); //ejfibsaojdnflksadnflkdsmnalkfnsdkljnfkmsngkm sdkmgnksdjngkmdsn gkn sdkg sdkn gvkn there is probably an error here
+
                 file += line + " ";
                 getline(analyze, line);
+
+
+                cout << "line: " << line << endl;
             }
+            cout << "finished reading, added to string file" << endl;
             analyze.close();
             DNA dna = DNA(file);
 
@@ -91,13 +99,47 @@ int main(int argc, char** argv)
 
 
             //Analysis time babey what it do
+            //debug lines
+            cout << "appending to daus.out"  << endl;
 
+            clout << "probability of nucleotides" << endl;
+            clout << "\ta:" << ((double)dna.a/dna.nucleotides) << endl;
+            clout << "\tc:" << ((double)dna.c/dna.nucleotides) << endl;
+            clout << "\tg:" << ((double)dna.g/dna.nucleotides) << endl;
+            clout << "\tt:" << ((double)dna.t/dna.nucleotides) << endl;
 
+            clout << "propability of bigrams:" << endl;
+            clout << "\taa:" << ((double)dna.aa/(dna.nucleotides-1)) << endl;
+            clout << "\tac:" << ((double)dna.ac/(dna.nucleotides-1)) << endl;
+            clout << "\tag:" << ((double)dna.ag/(dna.nucleotides-1)) << endl;
+            clout << "\tat:" << ((double)dna.at/(dna.nucleotides-1)) << endl;
+            clout << "\tca:" << ((double)dna.ca/(dna.nucleotides-1)) << endl;
+            clout << "\tca:" << ((double)dna.cc/(dna.nucleotides-1)) << endl;
+            clout << "\tca:" << ((double)dna.cg/(dna.nucleotides-1)) << endl;
+            clout << "\tct:" << ((double)dna.ct/(dna.nucleotides-1)) << endl;
+            clout << "\tga:" << ((double)dna.ga/(dna.nucleotides-1)) << endl;
+            clout << "\tgc:" << ((double)dna.gc/(dna.nucleotides-1)) << endl;
+            clout << "\tgg:" << ((double)dna.gg/(dna.nucleotides-1)) << endl;
+            clout << "\tgt:" << ((double)dna.gt/(dna.nucleotides-1)) << endl;
+            clout << "\tta:" << ((double)dna.ta/(dna.nucleotides-1)) << endl;
+            clout << "\ttc:" << ((double)dna.tc/(dna.nucleotides-1)) << endl;
+            clout << "\ttg:" << ((double)dna.tg/(dna.nucleotides-1)) << endl;
+            clout << "\ttt:" << ((double)dna.tt/(dna.nucleotides-1)) << endl;
 
+            clout << "standard deviation: " << dna.stddev(file) << endl;
+            clout << "variance: " << dna.variance(file) << endl;
+            clout << "mean: " << dna.mean(file) << endl;
+            clout << "sum: " << dna.sum() << endl;
 
             //checks next char to see if user wants to keep going
             cout << "Continue? (y/n)" << endl;
             cin >> cont;
+            if (cont == 'n' || cont == 'N')
+            {
+              return 0;
+              //closes off output stream to daus.out
+              clout.close();
+            }
         }
     }
     return 2;
@@ -132,6 +174,41 @@ void DNA::parse(string data)
               t++;
           if (index == ' ')
               strands++;
+
+          string bigram = "" + index + data[i+1];
+          if (i < data.size()-1 && bigram.compare("aa")  == 0)
+              aa++;
+          if (i < data.size()-1 && bigram.compare("ac")  == 0)
+              ac++;
+          if (i < data.size()-1 && bigram.compare("ag")  == 0)
+              ag++;
+          if (i < data.size()-1 && bigram.compare("at")  == 0)
+              at++;
+          if (i < data.size()-1 && bigram.compare("ca")  == 0)
+              ca++;
+          if (i < data.size()-1 && bigram.compare("cc")  == 0)
+              cc++;
+          if (i < data.size()-1 && bigram.compare("cg")  == 0)
+              cg++;
+          if (i < data.size()-1 && bigram.compare("ct")  == 0)
+              ct++;
+          if (i < data.size()-1 && bigram.compare("ga")  == 0)
+              ga++;
+          if (i < data.size()-1 && bigram.compare("gc")  == 0)
+              gc++;
+          if (i < data.size()-1 && bigram.compare("gg")  == 0)
+              gg++;
+          if (i < data.size()-1 && bigram.compare("gt")  == 0)
+              gt++;
+          if (i < data.size()-1 && bigram.compare("ta")  == 0)
+              ta++;
+          if (i < data.size()-1 && bigram.compare("tc")  == 0)
+              tc++;
+          if (i < data.size()-1 && bigram.compare("tg")  == 0)
+              tg++;
+          if (i < data.size()-1 && bigram.compare("tt")  == 0)
+              tt++;
+
       }
     nucleotides = a + c + g + t;
 }
@@ -166,10 +243,12 @@ double DNA::stddev(string data)
 
     return sqrt(sum/strands);
 }
+
 double DNA::variance(string data)
 {
   return pow(stddev(data),2);
 }
+
 //constructs DNA object
 DNA::DNA(string data)
 {
